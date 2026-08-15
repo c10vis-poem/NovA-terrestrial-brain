@@ -1,9 +1,9 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { cors } from "hono/cors";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { Hono } from "hono";
 import { createClient } from "@supabase/supabase-js";
+import { createLocalClient } from "./local-db-client.ts";
 
 import { register as registerThoughts, handleIngestNote } from "./tools/thoughts.ts";
 import { register as registerProjects } from "./tools/projects.ts";
@@ -24,8 +24,14 @@ import { createFunctionCallLogger, extractIpAddress, setCurrentRequestIp } from 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MCP_ACCESS_KEY = Deno.env.get("MCP_ACCESS_KEY")!;
+const LOCAL_PG_URL = Deno.env.get("LOCAL_PG_URL");
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+// LOCAL_PG_URL, when set, routes all DB calls to a local Postgres instance
+// via local-db-client.ts instead of hosted Supabase/PostgREST. See
+// local-db-client.ts for the compatibility shim this depends on.
+const supabase = LOCAL_PG_URL
+  ? createLocalClient(LOCAL_PG_URL)
+  : createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 const logger = createFunctionCallLogger(supabase);
 
 // ─── MCP Server ───────────────────────────────────────────────────────────────
