@@ -5,7 +5,7 @@
  * fragments from content. Includes LLM batch fallback for ambiguous cases.
  */
 
-const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
+const OPENROUTER_BASE = Deno.env.get("OPENROUTER_BASE") || "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
 
 // ---------------------------------------------------------------------------

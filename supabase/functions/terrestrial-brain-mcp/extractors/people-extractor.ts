@@ -14,7 +14,7 @@ import type {
 } from "./pipeline.ts";
 import { findPersonByName } from "./name-matching.ts";
 
-const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
+const OPENROUTER_BASE = Deno.env.get("OPENROUTER_BASE") || "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
 
 // ---------------------------------------------------------------------------
