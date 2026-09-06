@@ -11,22 +11,66 @@ PG_DB="terrestrial_brain"
 
 log() { echo "[terrestrial-brain-setup] $*"; }
 
-# --- Postgres + pgvector ---------------------------------------------------
-if ! dpkg -s postgresql-16-pgvector >/dev/null 2>&1; then
-  log "Installing postgresql-16-pgvector ..."
-  apt-get update -qq && apt-get install -y postgresql-16-pgvector
-fi
-pg_lsclusters 2>/dev/null | grep -q "^16 *main.*online" || pg_ctlcluster 16 main start
+is_termux() { [ -n "${PREFIX:-}" ] && [[ "$PREFIX" == *com.termux* ]]; }
 
-if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$PG_ROLE'" | grep -q 1; then
+# --- Postgres + pgvector ---------------------------------------------------
+if is_termux; then
+  # Termux ships its own native Postgres (bionic build) but no pgvector
+  # package for it — build the extension from source against Termux's own
+  # pg_config instead of routing through proot-Debian (which only has PG 17,
+  # not 16, and would add a second, slower, non-native Postgres for no gain).
+  PGDATA_LOCAL="$REPO_ROOT/local-mcp/.pgdata"
+  PG_LOG="$REPO_ROOT/local-mcp/.pgdata.log"
+  PGVECTOR_SRC="$REPO_ROOT/local-mcp/.pgvector-src"
+
+  if [ ! -f "$PGDATA_LOCAL/PG_VERSION" ]; then
+    log "Termux: initializing native Postgres data dir ..."
+    initdb -D "$PGDATA_LOCAL" -U postgres --auth=trust >/dev/null
+  fi
+  if ! pg_ctl -D "$PGDATA_LOCAL" status >/dev/null 2>&1; then
+    log "Termux: starting native Postgres ..."
+    pg_ctl -D "$PGDATA_LOCAL" -l "$PG_LOG" -o "-p 5432" start
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+      pg_isready -h 127.0.0.1 -p 5432 >/dev/null 2>&1 && break
+      sleep 1
+    done
+  fi
+
+  if ! psql -U postgres -h 127.0.0.1 -tAc "SELECT 1 FROM pg_extension WHERE extname='vector'" 2>/dev/null | grep -q 1; then
+    if [ ! -d "$PGVECTOR_SRC" ]; then
+      log "Cloning pgvector source ..."
+      git clone --depth 1 https://github.com/pgvector/pgvector.git "$PGVECTOR_SRC"
+    fi
+    log "Building pgvector against Termux's Postgres ..."
+    # Termux's own pg_config bakes in /usr/bin/mkdir, /usr/bin/install (plain
+    # Linux paths that don't exist here — Termux only has $PREFIX) and links
+    # without libm (bionic keeps math fns out of libc, unlike glibc), so all
+    # three need overriding for this build specifically.
+    (cd "$PGVECTOR_SRC" && make PG_CONFIG="$(command -v pg_config)" clean >/dev/null 2>&1
+     cd "$PGVECTOR_SRC" && make PG_CONFIG="$(command -v pg_config)" SHLIB_LINK="-lm" \
+       && make install PG_CONFIG="$(command -v pg_config)" \
+            MKDIR_P="$(command -v mkdir) -p" INSTALL="$(command -v install)") \
+      || log "pgvector build failed — see output above; extension install below will then fail too"
+  fi
+  PSQL=(psql -U postgres -h 127.0.0.1)
+else
+  if ! dpkg -s postgresql-17-pgvector >/dev/null 2>&1; then
+    log "Installing postgresql-17-pgvector ..."
+    apt-get update -qq && apt-get install -y postgresql-17-pgvector
+  fi
+  pg_lsclusters 2>/dev/null | grep -q "^17 *main.*online" || pg_ctlcluster 17 main start
+  PSQL=(sudo -u postgres psql)
+fi
+
+if ! "${PSQL[@]}" -tAc "SELECT 1 FROM pg_roles WHERE rolname='$PG_ROLE'" | grep -q 1; then
   log "Creating role/database ..."
-  sudo -u postgres psql -c "CREATE ROLE $PG_ROLE LOGIN PASSWORD '$PG_PASS';"
-  sudo -u postgres psql -c "CREATE DATABASE $PG_DB OWNER $PG_ROLE;"
+  "${PSQL[@]}" -c "CREATE ROLE $PG_ROLE LOGIN PASSWORD '$PG_PASS';"
+  "${PSQL[@]}" -c "CREATE DATABASE $PG_DB OWNER $PG_ROLE;"
   for r in anon authenticated service_role; do
-    sudo -u postgres psql -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='$r') THEN CREATE ROLE $r NOLOGIN; END IF; END \$\$;"
+    "${PSQL[@]}" -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='$r') THEN CREATE ROLE $r NOLOGIN; END IF; END \$\$;"
   done
-  sudo -u postgres psql -c "GRANT service_role TO $PG_ROLE;"
-  sudo -u postgres psql -d "$PG_DB" <<SQL
+  "${PSQL[@]}" -c "GRANT service_role TO $PG_ROLE;"
+  "${PSQL[@]}" -d "$PG_DB" <<SQL
 CREATE SCHEMA IF NOT EXISTS extensions;
 CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 CREATE SCHEMA IF NOT EXISTS auth;
