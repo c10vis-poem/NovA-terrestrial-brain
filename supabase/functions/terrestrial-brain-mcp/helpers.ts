@@ -1,7 +1,37 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { ensureDir } from "https://deno.land/std/fs/mod.ts";
 
 const OPENROUTER_BASE = Deno.env.get("OPENROUTER_BASE") || "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
+const VAULT_MEMORIES_DIR = Deno.env.get("VAULT_MEMORIES_DIR") || "";
+
+export async function writeVaultNote(
+  category: "thought" | "task" | "project" | "constraint",
+  content: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  if (!VAULT_MEMORIES_DIR) return;
+  try {
+    await ensureDir(VAULT_MEMORIES_DIR);
+    const ts = new Date().toISOString();
+    const uuid = crypto.randomUUID();
+    const slug = content.slice(0, 40).replace(/[^a-zA-Z0-9]+/g, "-").replace(/-+$/, "");
+    const filename = `${ts.slice(0, 10)}-${slug}.md`;
+    const frontmatter = [
+      "---",
+      `source_db: terrestrial-brain`,
+      `uuid: ${uuid}`,
+      `timestamp: ${ts}`,
+      `category: ${category}`,
+      ...(metadata?.type ? [`type: ${metadata.type}`] : []),
+      ...(metadata?.topics ? [`topics: [${(metadata.topics as string[]).join(", ")}]`] : []),
+      "---",
+    ].join("\n");
+    await Deno.writeTextFile(`${VAULT_MEMORIES_DIR}/${filename}`, `${frontmatter}\n\n${content}\n`);
+  } catch (err) {
+    console.error(`vault write failed: ${(err as Error).message}`);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Backwards-compatible references reader
@@ -198,6 +228,7 @@ Return ONLY valid JSON: {"thoughts": ["thought 1", "thought 2", ...]}`,
         ...(provenance ? { reliability: provenance.reliability, author: provenance.author } : {}),
       });
       if (error) throw new Error(error.message);
+      await writeVaultNote("thought", thoughtContent, metadata as Record<string, unknown>);
     })
   );
 
