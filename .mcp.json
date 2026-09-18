@@ -1,12 +1,13 @@
 {
   "mcpServers": {
     "code-review-graph": {
-      "command": "uvx",
+      "command": "proot-distro",
       "args": [
-        "code-review-graph",
+        "login", "debian", "--",
+        "/data/data/com.termux/files/home/repos/NovA-code-review-graph/.venv-debian/bin/code-review-graph",
         "serve"
       ],
-      "cwd": "/home/user/NovA-terrestrial-brain",
+      "cwd": "/data/data/com.termux/files/home/repos/NovA-terrestrial-brain",
       "type": "stdio"
     }
   }

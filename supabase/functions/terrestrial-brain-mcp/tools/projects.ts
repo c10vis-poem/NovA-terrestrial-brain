@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { FunctionCallLogger, withMcpLogging } from "../logger.ts";
+import { writeVaultNote } from "../helpers.ts";
 
 export function register(server: McpServer, supabase: SupabaseClient, logger: FunctionCallLogger) {
   server.registerTool(
@@ -39,6 +40,8 @@ export function register(server: McpServer, supabase: SupabaseClient, logger: Fu
             isError: true,
           };
         }
+
+        await writeVaultNote("project", `Project: ${data.name}${description ? ` — ${description}` : ""}`, { type: type || "project" });
 
         return {
           content: [{ type: "text" as const, text: `Created project "${data.name}" (id: ${data.id})` }],
