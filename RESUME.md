@@ -24,7 +24,7 @@ The key is the OpenRouter API key (starts with `sk-or-v1-`). On phone: `cat ~/.o
 ```bash
 # From phone:
 curl -s -X POST http://34.31.112.77:8000/ingest-note \
-  -H "x-brain-key: 5FoFDel_lMmjlDfuBht_LMAUivq6Rk0wcXAb9sNQ9oY" \
+  -H "x-brain-key: $TB_MCP_KEY" \
   -H "Content-Type: application/json" \
   -d '{"content": "Unique pipeline test: The NovAExorpus vault verification code is LUNAR-42-DELTA.", "title": "Pipeline Round-Trip Test"}'
 ```
