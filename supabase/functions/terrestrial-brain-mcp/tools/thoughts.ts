@@ -1,3 +1,4 @@
+import { CHAT_MODEL } from "../models.ts";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -8,7 +9,6 @@ import { ProjectExtractor } from "../extractors/project-extractor.ts";
 import { TaskExtractor } from "../extractors/task-extractor.ts";
 import { PeopleExtractor } from "../extractors/people-extractor.ts";
 import { FunctionCallLogger, withMcpLogging } from "../logger.ts";
-import { CHAT_MODEL } from "../models.ts";
 
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;

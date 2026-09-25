@@ -1,6 +1,6 @@
+import { CHAT_MODEL, EMBEDDING_MODEL } from "./models.ts";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { ensureDir } from "https://deno.land/std/fs/mod.ts";
-import { CHAT_MODEL, EMBEDDING_MODEL } from "./models.ts";
 
 const OPENROUTER_BASE = Deno.env.get("OPENROUTER_BASE") || "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
