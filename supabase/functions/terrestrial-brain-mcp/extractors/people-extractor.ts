@@ -6,6 +6,7 @@
  * people records for previously unseen names.
  */
 
+import { CHAT_MODEL } from "../models.ts";
 import type { ParsedNote } from "../parser.ts";
 import type {
   ExtractionContext,
@@ -13,7 +14,6 @@ import type {
   Extractor,
 } from "./pipeline.ts";
 import { findPersonByName } from "./name-matching.ts";
-import { CHAT_MODEL } from "../models.ts";
 
 const OPENROUTER_BASE = Deno.env.get("OPENROUTER_BASE") || "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;

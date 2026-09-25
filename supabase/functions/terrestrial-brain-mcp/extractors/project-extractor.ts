@@ -8,9 +8,9 @@
  * 3.  LLM content matching: focused AI call for remaining associations
  */
 
+import { CHAT_MODEL } from "../models.ts";
 import type { ParsedNote } from "../parser.ts";
 import type {
-import { CHAT_MODEL } from "../models.ts";
   ExtractionContext,
   ExtractionResult,
   Extractor,
