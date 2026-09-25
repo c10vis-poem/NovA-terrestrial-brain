@@ -8,6 +8,7 @@
  * 3.  LLM content matching: focused AI call for remaining associations
  */
 
+import { CHAT_MODEL } from "../models.ts";
 import type { ParsedNote } from "../parser.ts";
 import type {
   ExtractionContext,
@@ -75,7 +76,7 @@ export async function extractProjectNameFromPath(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {
@@ -212,7 +213,7 @@ async function detectProjectsByContent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {
