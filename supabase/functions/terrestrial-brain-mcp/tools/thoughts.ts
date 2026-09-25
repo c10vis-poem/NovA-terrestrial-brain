@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { getEmbedding, extractMetadata, freshIngest, getProjectRefs, resolveProjectNames } from "../helpers.ts";
+import { getEmbedding, extractMetadata, freshIngest, getProjectRefs, resolveProjectNames, writeVaultNote } from "../helpers.ts";
 import { parseNote } from "../parser.ts";
 import { runExtractionPipeline } from "../extractors/pipeline.ts";
 import { ProjectExtractor } from "../extractors/project-extractor.ts";
@@ -522,6 +522,8 @@ export function register(server: McpServer, supabase: SupabaseClient, logger: Fu
             isError: true,
           };
         }
+
+        await writeVaultNote("thought", content, metadata as Record<string, unknown>);
 
         let buildsOnNote = "";
         if (builds_on && builds_on.length > 0) {
