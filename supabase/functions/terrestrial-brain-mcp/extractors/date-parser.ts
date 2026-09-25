@@ -1,3 +1,4 @@
+import { CHAT_MODEL } from "../models.ts";
 /**
  * Date extraction from checkbox text.
  *
@@ -277,7 +278,7 @@ export async function inferDatesFromContent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {

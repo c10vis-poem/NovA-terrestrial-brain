@@ -21,6 +21,7 @@ import {
   cleanStrippedText,
 } from "./date-parser.ts";
 import { findPersonInText } from "./name-matching.ts";
+import { CHAT_MODEL } from "../models.ts";
 
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
@@ -257,7 +258,7 @@ async function inferProjectsByContent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {
@@ -414,7 +415,7 @@ async function inferTaskEnrichments(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {

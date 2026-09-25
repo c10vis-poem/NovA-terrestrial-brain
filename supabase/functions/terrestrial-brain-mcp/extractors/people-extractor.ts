@@ -13,6 +13,7 @@ import type {
   Extractor,
 } from "./pipeline.ts";
 import { findPersonByName } from "./name-matching.ts";
+import { CHAT_MODEL } from "../models.ts";
 
 const OPENROUTER_BASE = Deno.env.get("OPENROUTER_BASE") || "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
@@ -50,7 +51,7 @@ async function detectAllPeople(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {

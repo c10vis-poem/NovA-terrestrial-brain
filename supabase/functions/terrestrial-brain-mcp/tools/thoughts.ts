@@ -8,6 +8,7 @@ import { ProjectExtractor } from "../extractors/project-extractor.ts";
 import { TaskExtractor } from "../extractors/task-extractor.ts";
 import { PeopleExtractor } from "../extractors/people-extractor.ts";
 import { FunctionCallLogger, withMcpLogging } from "../logger.ts";
+import { CHAT_MODEL } from "../models.ts";
 
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
@@ -933,7 +934,7 @@ export async function handleIngestNote(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {

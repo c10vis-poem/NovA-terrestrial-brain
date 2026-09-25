@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { ensureDir } from "https://deno.land/std/fs/mod.ts";
+import { CHAT_MODEL, EMBEDDING_MODEL } from "./models.ts";
 
 const OPENROUTER_BASE = Deno.env.get("OPENROUTER_BASE") || "https://openrouter.ai/api/v1";
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY")!;
@@ -89,7 +90,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/text-embedding-3-small",
+      model: EMBEDDING_MODEL,
       input: text,
     }),
   });
@@ -109,7 +110,7 @@ export async function extractMetadata(text: string): Promise<Record<string, unkn
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/gpt-4o-mini",
+      model: CHAT_MODEL,
       response_format: { type: "json_object" },
       messages: [
         {
@@ -150,7 +151,7 @@ export async function freshIngest(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/gpt-4o-mini",
+      model: CHAT_MODEL,
       response_format: { type: "json_object" },
       messages: [
         {
