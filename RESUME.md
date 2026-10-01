@@ -1,40 +1,19 @@
 # RESUME — Terrestrial Brain Pipeline
 
-## Status: ONE COMMAND FROM ROUND-TRIP PROOF
+## Status: ROUND-TRIP PROVEN (2026-09-18)
 
-### The blocker
+Phone → TB → OpenRouter → Postgres → vault markdown — fully verified.
+Test thought `LUNAR-42-DELTA` is in DB (id `8c79f79f`) and in vault
+(`memories/2026-09-18-The-NovAExorpus-vault-verification-code.md`).
 
-The systemd unit at `/etc/systemd/system/terrestrial-brain.service` on the VM
-(omniroute-brain, 34.31.112.77) does NOT pass `OPENROUTER_API_KEY` to the TB
-process. The key IS in `.env.local` but systemd's `EnvironmentFile` isn't
-propagating it (possibly because the `Environment=` lines that follow override
-the file's namespace). Fix:
-
-```bash
-# ON THE VM (gcloud compute ssh omniroute-brain --zone=us-central1-a):
-sudo sed -i '/Environment=VAULT_MEMORIES_DIR/a Environment=OPENROUTER_API_KEY=<THE_KEY>' /etc/systemd/system/terrestrial-brain.service
-sudo systemctl daemon-reload
-sudo systemctl restart terrestrial-brain
-```
-
-The key is the OpenRouter API key (starts with `sk-or-v1-`). On phone: `cat ~/.openwiki/.env`.
-
-### After fixing, verify with:
-
-```bash
-# From phone:
-curl -s -X POST http://34.31.112.77:8000/ingest-note \
-  -H "x-brain-key: $TB_MCP_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"content": "Unique pipeline test: The NovAExorpus vault verification code is LUNAR-42-DELTA.", "title": "Pipeline Round-Trip Test"}'
-```
-
-Expected: `{"success":true,"message":"Captured 1 thought from ..."}`.
-
-Then check vault file was written:
-```bash
-gcloud compute ssh omniroute-brain --zone=us-central1-a --command="ls /home/u0_a538/NovAExorpus-vault/memories/"
-```
+### Fixes applied this session (on VM, not in repo code)
+- `thoughts.reliability` column changed from `double precision` to `text`
+  (code passes `"less reliable"`, not a number)
+- `thoughts` table gained `reference_id`, `note_snapshot_id`, `metadata` columns
+- `deno.json` got `"nodeModulesDir": "auto"` and `postgres` import
+- systemd unit: `OPENROUTER_BASE` changed from localhost OmniRoute to real
+  OpenRouter; `OPENROUTER_API_KEY` added
+- Rejection logging added to `freshIngest` in helpers.ts on VM
 
 ### What's verified working
 
