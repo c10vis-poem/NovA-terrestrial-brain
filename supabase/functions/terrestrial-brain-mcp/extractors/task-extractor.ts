@@ -10,6 +10,7 @@
  * - People assignment: explicit pattern fast path + AI fallback
  */
 
+import { CHAT_MODEL } from "../models.ts";
 import type { ParsedNote, ParsedCheckbox } from "../parser.ts";
 import type {
   ExtractionContext,
@@ -257,7 +258,7 @@ async function inferProjectsByContent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {
@@ -414,7 +415,7 @@ async function inferTaskEnrichments(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {

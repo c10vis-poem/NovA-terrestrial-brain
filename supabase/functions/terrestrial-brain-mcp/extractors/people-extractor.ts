@@ -6,6 +6,7 @@
  * people records for previously unseen names.
  */
 
+import { CHAT_MODEL } from "../models.ts";
 import type { ParsedNote } from "../parser.ts";
 import type {
   ExtractionContext,
@@ -50,7 +51,7 @@ async function detectAllPeople(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: CHAT_MODEL,
         response_format: { type: "json_object" },
         messages: [
           {
